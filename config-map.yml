@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: my-app
+  name: my-config-map
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <title>Example Config Map Content</title>
+        </head>
+        <body>
+            <p>This is an example of a simple HTML page.</p>
+            <p>custom page</p>
+            <p>This HTML is served by nginx from the file index.html.</p>
+            <p>The file index.html is loaded from the config map to /usr/share/nginx/html/index.html as defined by the Deployment</p>
+        </body>
+    </html>
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      volumes:
+        - name: my-config-volume
+          configMap:
+            name: my-config-map
+      containers:
+        - name: nginx
+          image: nginx:latest
+          resources:
+            limits:
+              cpu: "1"
+              memory: 300M
+          ports:
+            - name: http
+              containerPort: 80
+          volumeMounts:
+            - name: my-config-volume
+              mountPath: /usr/share/nginx/html
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: my-app
+  type: LoadBalancer

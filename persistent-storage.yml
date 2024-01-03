@@ -1,0 +1,34 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: my-pv-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  volumes:
+    - name: my-pv-volume
+      persistentVolumeClaim:
+       claimName: my-pv-claim
+  containers:
+  - name: my-container
+    image: centos:7
+    command: ["/bin/sh"]
+    args: ["-c", "while true; do sleep 10; done"]
+    volumeMounts:
+      - mountPath: "/persistent_data"
+        name: my-pv-volume
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1G

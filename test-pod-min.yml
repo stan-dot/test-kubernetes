@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  containers:
+  - name: my-container
+    image: centos:7
+    command: ["/bin/sh"]
+    args: ["-c", "while true; do sleep 10; done"]
+    resources:
+      limits:
+        cpu: "1"
+        memory: 300M
+
+
+  
