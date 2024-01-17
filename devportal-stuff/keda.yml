@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keda-prometheus-scaled-test
+  namespace: xma12127
+  labels:
+    app: keda-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keda-test
+  template:
+    metadata:
+      labels:
+        app: keda-test
+    spec:
+      containers:
+      - name: keda-test-nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+        securityContext:
+          privileged: false
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - NET_RAW
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keda-service
+  namespace: xma12127
+spec:
+  type: ClusterIP
+  selector:
+    app: keda-test
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  namespace: 
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - argus-keda-example.diamond.ac.uk
+  rules:
+  - host: argus-keda-example.diamond.ac.uk
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: keda-service
+            port:
+              number: 80

@@ -1,0 +1,21 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: prometheus-scaledobject-test
+  namespace: xma12127
+spec:
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  scaleTargetRef:
+  #scaleTargetRef must match the controller we wish to scale on
+    apiVersion: apps/v1
+    kind: Deployment
+    name: keda-prometheus-scaled-test
+  triggers:
+  - type: prometheus # we are telling KEDA that we want to use the prometheus scaler
+    metadata:
+      serverAddress: http://argus-prometheus.diamond.ac.uk
+      metricName: kube_pod_status_ready
+      threshold: "5"
+      metricType: Value
+      query: sum(rate(nginx_ingress_controller_requests{host="<cluster name>-keda-example.diamond.ac.uk", method="GET"}[2m]))
